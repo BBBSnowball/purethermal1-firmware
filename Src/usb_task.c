@@ -41,12 +41,25 @@ void HAL_RCC_CSSCallback(void) {
 	DEBUG_PRINTF("Oh no! HAL_RCC_CSSCallback()\r\n");
 }
 
-#if defined(TMP007) && defined(TMP007_OVERLAY)
 #include "ugui.h"
+
+#if (defined(TMP007) && defined(TMP007_OVERLAY)) || defined(SPLASHSCREEN_OVERLAY)
 UG_GUI gui; 
 static void pixel_set(UG_S16 x , UG_S16 y ,UG_COLOR c )
 {
+	y *= 2;
+	if (y > IMAGE_NUM_LINES) return;
+	if (x > FRAME_LINE_LENGTH) return;
+
 	last_buffer->lines.rgb[y].data.image_data[x].g = c;
+
+	//last_buffer->lines.rgb[y].data.image_data[x].r = c&0xff;
+	//last_buffer->lines.rgb[y].data.image_data[x].g = (c>>8)&0xff;
+	//last_buffer->lines.rgb[y].data.image_data[x].b = (c>>16)&0xff;
+
+	//last_buffer->lines.rgb[y].data.image_data[x].r = c ? x*16 : 0;
+	//last_buffer->lines.rgb[y].data.image_data[x].g = c ? y*16 : 0;
+	//last_buffer->lines.rgb[y].data.image_data[x].b = c ? 0xff : 0;
 }
 #endif
 
@@ -156,7 +169,7 @@ PT_THREAD( usb_task(struct pt *pt))
 
 	PT_BEGIN(pt);
 
-#if defined(TMP007) && defined(TMP007_OVERLAY)
+#if (defined(TMP007) && defined(TMP007_OVERLAY)) || defined(SPLASHSCREEN_OVERLAY)
 	UG_Init(&gui,pixel_set,80,60);
 	UG_FontSelect(&FONT_8X8);     
 #endif
@@ -181,7 +194,11 @@ PT_THREAD( usb_task(struct pt *pt))
 
 		last_frame_count++;
 
-		if (((last_frame_count % 1800) > 0)   && ((last_frame_count % 1800) < 150)  )
+		if (uvc_xmit_seg > 0)
+		{
+			// don't show any splash here - only do that in the first segment
+		}
+		else if (((last_frame_count % 1800) > 0)   && ((last_frame_count % 1800) < 150)  )
 		{
 #ifdef SPLASHSCREEN_OVERLAY 
 			if(overlay_mode == 1)
@@ -212,6 +229,13 @@ PT_THREAD( usb_task(struct pt *pt))
 				UG_PutChar(temperature%10 + '0',16,51,255,0);
 				UG_PutChar(248,24,51,255,0);
 				UG_PutChar('C',32,51,255,0);
+			}
+
+#elif defined(SPLASHSCREEN_OVERLAY)
+			int tmp = last_frame_count;
+			for (int i=0;i<8;i++) {
+				UG_PutChar('0' + (tmp%10),FRAME_LINE_LENGTH-8-8*i,0,255,0);
+				tmp /= 10;
 			}
 #endif
 		}
