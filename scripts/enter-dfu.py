@@ -100,7 +100,7 @@ else:
 
         subprocess.run(sys.argv[1:])
 
-        dev = wait_for_device(2, idVendor=0x1e4e, idProduct=0x0100)
+        dev = wait_for_device(3, idVendor=0x1e4e, idProduct=0x0100)
         if not dev:
             raise Exception("Timeout while waiting for device to leave bootloader")
 
