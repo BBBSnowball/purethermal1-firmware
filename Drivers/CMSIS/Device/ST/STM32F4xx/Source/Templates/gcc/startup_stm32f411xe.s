@@ -98,15 +98,21 @@ Reset_Handler:
 #define RCC_BASE              (AHB1PERIPH_BASE + 0x3800U)
 #define RCC_CSR_OFFSET        0x74
 #define RCC_CSR_SFTRSTF       0x10000000U
+#define RCC_CSR_PADRSTF       0x04000000U
+#define RCC_CSR_RMVF          0x01000000U
 
   /* if ((RCC->CSR & RCC_CSR_SFTRSTF) == 0) goto NormalStartup */
   ldr   r1, =RCC_CSR
   ldr   r1, [r1]
-  tst   r1, #RCC_CSR_SFTRSTF
-  //beq   NormalStartup  /* branch if equal, i.e. Z is set, i.e. SFTRSTF is not set, i.e. it was not a software reset */
-  //FIXME make this work!
+  ldr   r2, [r1]
+  tst   r2, #RCC_CSR_SFTRSTF
+  beq   NormalStartup  /* branch if equal, i.e. Z is set, i.e. SFTRSTF is not set, i.e. it was not a software reset */
 
 JumpToDFU:
+  /* clear reset reason before jumping to DFU: __HAL_RCC_CLEAR_RESET_FLAGS: (RCC->CSR |= RCC_CSR_RMVF) */
+  orr   r2, #RCC_CSR_RMVF
+  str   r2, [r1]
+
   ldr   r0, =DFU_Vectors
   ldr   r0, [r0]
   ldr   sp, [r0, #0]
