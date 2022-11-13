@@ -511,6 +511,7 @@ PT_THREAD( LEP_I2C_SetAttribute_PT(struct pt *pt,
 }
 
 union custom_uvc custom_uvc = {0};
+bool custom_uvc_was_written = false;
 
 PT_THREAD( lepton_attribute_xfer_task(struct pt *pt))
 {
@@ -553,6 +554,7 @@ PT_THREAD( lepton_attribute_xfer_task(struct pt *pt))
 				memcpy(&custom_uvc, req.buffer,
 						req.length > sizeof(custom_uvc) ?
 								sizeof(custom_uvc) : req.length);
+        custom_uvc_was_written = true;
 				HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
 
 				if (result == LEP_OK)
@@ -568,10 +570,31 @@ PT_THREAD( lepton_attribute_xfer_task(struct pt *pt))
 				HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
 				USBD_CtlError(hUsbDevice_0, 0);
 				HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+      } else if (!custom_uvc_was_written) {
+        // We trigger read and write operations by ATTR_GET. This can be unsafe if the user didn't intend this.
+        // Therefore, we refuse to do this unless custom_uvc has been set before. That way, it will be save if
+        // the user only tries to read attributes.
+
+        memset(response->data, 0, sizeof(response->data));
+        if (req.control_id == CUST_CONTROL_GET
+            || req.control_id == CUST_CONTROL_DIRECT_READ) {
+          cust_response_length = sizeof(struct custom_response);
+        } else {
+          cust_response_length = sizeof(LEP_RESULT);
+        }
+
+        response->result = LEP_COMMAND_NOT_ALLOWED;
+
+				HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
+				USBD_CtlSendData(hUsbDevice_0, req.buffer, cust_response_length);
+				HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
 			} else if (req.type == UVC_REQUEST_TYPE_ATTR_GET) {
 		        PT_INIT(&lep_pt);
 
 		        response = (struct custom_response *)(req.buffer);
+
+			      cust_response_length = sizeof(LEP_RESULT);
+            result = LEP_ERROR;
 
 		        if (req.control_id == CUST_CONTROL_GET) {
 			        PT_WAIT_THREAD(pt, LEP_I2C_GetAttribute_PT(&lep_pt, &hport_desc,

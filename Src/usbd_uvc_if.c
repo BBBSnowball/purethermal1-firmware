@@ -305,6 +305,8 @@ static int8_t UVC_VC_ControlGet  (VC_TERMINAL_ID entity_id, uint8_t cmd, uint8_t
           return (USBD_FAIL);
 #endif
       }
+      else
+        return (USBD_FAIL);
       break;
     case UVC_GET_MAX:
       VC_LEP_GetMaxValue(entity_id, (cs_value - 1) << 2, pbuf, length);
