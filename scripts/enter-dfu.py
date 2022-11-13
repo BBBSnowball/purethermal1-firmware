@@ -4,7 +4,7 @@
 # Example: make SYSTEM=arm-none-eabihf- && ./scripts/enter-dfu.py dfu-util -a 0 -D main.bin -s 0x08000000:leave
 
 import sys, time, subprocess
-import usb.core
+import usb.core, usb.control
 
 def send_vendor_read_request(dev, bRequest, expect_reset=False):
     try:
@@ -18,7 +18,7 @@ def send_vendor_read_request(dev, bRequest, expect_reset=False):
             raise
 
     try:
-        print(dev.ctrl_transfer(0xc0, bRequest, 0, 0, 32))
+        return dev.ctrl_transfer(0xc0, bRequest, 0, 0, 32)
     except usb.core.USBError as e:
         # We expect "[Errno 32] Pipe error".
         if not expect_reset or e.errno != 32:
@@ -38,22 +38,44 @@ def enter_dfu():
     return False
 
 def reset_device(dev):
-    send_vendor_read_request(dev, 122, expect_reset=True)
-    time.sleep(1)
-    dev2 = wait_for_device(0.5, idVendor=0x1e4e, idProduct=0x0100)
-    print(dev)
+    send_vendor_read_request(dev, 124, expect_reset=True)
+
+    if not wait_for_device(1, expect_present=False, bus=dev.bus, address=dev.address, idVendor=0x1e4e, idProduct=0x0100):
+        raise Exception("Timeout while waiting for device to disappear from USB")
+
+    dev2 = wait_for_device(2, idVendor=0x1e4e, idProduct=0x0100)
+    if not dev2:
+        raise Exception("Timeout while waiting for device to restart.")
+
+    #print((dev2.bus, dev2.address))
     if dev.bus == dev2.bus and dev.address == dev2.address:
         print("Reset didn't work. Adress has remained the same.")
 
-def ping(dev):
-    send_vendor_read_request(dev, 120)
+    return dev2
 
-def wait_for_device(timeout, **kwargs):
+def ping(dev):
+    #print(usb.control.get_configuration(dev))
+
+    send_vendor_read_request(dev, 121)
+
+    if False:
+        for i in range(256):
+            if i == 123 or i == 124:
+                continue
+            try:
+                x = send_vendor_read_request(dev, i)
+                print((i, "ok", x))
+            except usb.core.USBError as e:
+                print((i, e.errno, str(e)))
+
+def wait_for_device(timeout, expect_present=True, **kwargs):
     stepsize = min(timeout/10, 0.1)
     for _ in range(round(timeout/stepsize)):
         dev = usb.core.find(**kwargs)
-        if dev:
+        if expect_present and dev:
             return dev
+        elif not expect_present and not dev:
+            return True
         time.sleep(stepsize)
     return None
 
@@ -79,7 +101,8 @@ else:
         subprocess.run(sys.argv[1:])
 
         dev = wait_for_device(2, idVendor=0x1e4e, idProduct=0x0100)
-        print(dev)
         if not dev:
             raise Exception("Timeout while waiting for device to leave bootloader")
+
+        # UVC doesn't work after DFU so we trigger a real reset, as well.
         reset_device(dev)

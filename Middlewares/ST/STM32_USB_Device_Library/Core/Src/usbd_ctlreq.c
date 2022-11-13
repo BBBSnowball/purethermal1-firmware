@@ -122,34 +122,30 @@ USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev , USBD_SetupReqType
 {
   USBD_StatusTypeDef ret = USBD_OK;  
 
-  if ((req->bmRequest & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_VENDOR && req->bRequest == 123)
+  if ((req->bmRequest & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_VENDOR)
   {
     switch (req->bRequest) 
     {
-      case 123:
-        //NOTE This will not be sent back because we will reset ourselves before we can do so.
-        //     We are in an interrupt context here so waiting wouldn't be a good idea.
-        USBD_CtlSendData (pdev, (uint8_t*)"DFU", 3);
+    case 123:
+      //NOTE This will not be sent back because we will reset ourselves before we can do so.
+      //     We are in an interrupt context here so waiting wouldn't be a good idea.
+      USBD_CtlSendData (pdev, (uint8_t*)"DFU", 3);
 
-        dfu_enter();
-        return ret;
+      dfu_enter();
+      return ret;
 
-      //FIXME none of these works...
-      case 124:
-      case 122:
-      case 125:
-        //NOTE This will not be sent back because we will reset ourselves before we can do so.
-        //     We are in an interrupt context here so waiting wouldn't be a good idea.
-        USBD_CtlSendData (pdev, (uint8_t*)"RESET", 5);
+    case 124:
+      //NOTE This will not be sent back because we will reset ourselves before we can do so.
+      //     We are in an interrupt context here so waiting wouldn't be a good idea.
+      USBD_CtlSendData (pdev, (uint8_t*)"RESET", 5);
 
-        HAL_NVIC_SystemReset();
-        return ret;
+      HAL_NVIC_SystemReset();
+      return ret;
 
-      //FIXME none of these works...
-      case 120:
-      case 121:
-        USBD_CtlSendData (pdev, (uint8_t*)"PONG", 4);
-        return ret;
+    case 120:
+    case 121:
+      USBD_CtlSendData (pdev, (uint8_t*)"PONG", 4);
+      return ret;
     }
   }
 
