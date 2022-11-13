@@ -21,7 +21,11 @@ extern volatile uint8_t g_uvc_stream_status;
 extern volatile uint8_t g_telemetry_num_lines;
 extern struct uvc_streaming_control videoCommitControl;
 
+#ifdef SPLASHSCREEN_OVERLAY_DEFAULT_ON
+static int overlay_mode = 1;
+#else
 static int overlay_mode = 0;
+#endif
 
 void change_overlay_mode(void)
 {
