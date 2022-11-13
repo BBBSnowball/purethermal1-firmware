@@ -296,6 +296,157 @@ LEP_RESULT DEV_I2C_MasterStatus(void )
 }
 
 
+LEP_RESULT DEV_I2C_MasterGenericRead(LEP_UINT16  portID,            // User-defined port ID
+                                  LEP_UINT8   deviceAddress,        // I2C Device Address
+                                  LEP_UINT8  *readDataPtr,          // Read DATA buffer pointer
+                                  LEP_UINT16  bytesToRead)          // Number of bytes to Read
+{
+    /* Place Device-Specific Interface here
+    */ 
+
+    HAL_StatusTypeDef hal_status;
+
+    hal_status = HAL_I2C_Master_Receive(&hi2c1, deviceAddress << 1, readDataPtr, bytesToRead, COMM_TIMEOUT_MS);
+
+    switch (hal_status)
+    {
+        case HAL_OK:
+            return LEP_OK;
+        case HAL_ERROR:
+            // This could be NACK but we don't know. Unfortunately, the HAL doesn't tell us the details :-/
+            return LEP_ERROR_I2C_NACK_RECEIVED;
+        case HAL_BUSY:
+            return LEP_ERROR_I2C_BUS_NOT_READY;
+        case HAL_TIMEOUT:
+            return LEP_TIMEOUT_ERROR;
+        default:
+            return LEP_ERROR_I2C_FAIL;
+    }
+}
+
+LEP_RESULT DEV_I2C_MasterGenericWrite(LEP_UINT16  portID,           // User-defined port ID
+                                   LEP_UINT8   deviceAddress,       // Lepton Camera I2C Device Address
+                                   LEP_UINT8  *writeDataPtr,        // Write DATA buffer pointer
+                                   LEP_UINT16  bytesToWrite)        // Number of bytes to Write
+{
+    /* Place Device-Specific Interface here
+    */ 
+
+    HAL_StatusTypeDef hal_status;
+
+    hal_status = HAL_I2C_Master_Transmit(&hi2c1, deviceAddress << 1, writeDataPtr, bytesToWrite, COMM_TIMEOUT_MS);
+
+    switch (hal_status)
+    {
+        case HAL_OK:
+            return LEP_OK;
+        case HAL_ERROR:
+            // This could be NACK but we don't know. Unfortunately, the HAL doesn't tell us the details :-/
+            return LEP_ERROR_I2C_NACK_RECEIVED;
+        case HAL_BUSY:
+            return LEP_ERROR_I2C_BUS_NOT_READY;
+        case HAL_TIMEOUT:
+            return LEP_TIMEOUT_ERROR;
+        default:
+            return LEP_ERROR_I2C_FAIL;
+    }
+}
+
+LEP_RESULT DEV_I2C_MasterGenericWriteRead(LEP_UINT16  portID,               // User-defined port ID
+                                          LEP_UINT8   deviceAddress,        // Lepton Camera I2C Device Address
+                                          LEP_UINT8  *writeDataPtr,         // Write DATA buffer pointer
+                                          LEP_INT16  bytesToWrite,          // Number of bytes to Write
+                                          LEP_UINT8  *readDataPtr,          // Read DATA buffer pointer
+                                          LEP_INT16  bytesToRead            // Number of bytes to Read
+                                         )
+{
+    /* Place Device-Specific Interface here
+    */ 
+
+    HAL_StatusTypeDef hal_status;
+
+    if ((bytesToWrite == 1 || bytesToWrite == 2) && bytesToRead >= 0)
+    {
+        // Special case: Use HAL_I2C_Mem_Read because that seems to be the only way to do it with I2C repeated-start,
+        // which is necessary for Melexis MLX90614. Unfortunately, this will only work if the write has 1 or 2 bytes
+        // so we fall back to separate accesses in the other cases.
+
+        uint16_t writeData;
+        uint16_t writeDataSize;
+        if (bytesToWrite == 1)
+        {
+            writeData = writeDataPtr[0];
+            writeDataSize = I2C_MEMADD_SIZE_8BIT;
+        }
+        else
+        {
+            writeData = (writeDataPtr[0] << 8) | writeDataPtr[1];
+            writeDataSize = I2C_MEMADD_SIZE_16BIT;
+        }
+        hal_status = HAL_I2C_Mem_Read(&hi2c1, deviceAddress << 1, writeData, writeDataSize, readDataPtr, bytesToRead, COMM_TIMEOUT_MS);
+
+        switch (hal_status)
+        {
+            case HAL_OK:
+                break;
+            case HAL_ERROR:
+                // This could be NACK but we don't know. Unfortunately, the HAL doesn't tell us the details :-/
+                return LEP_ERROR_I2C_NACK_RECEIVED;
+            case HAL_BUSY:
+                return LEP_ERROR_I2C_BUS_NOT_READY;
+            case HAL_TIMEOUT:
+                return LEP_TIMEOUT_ERROR;
+            default:
+                return LEP_ERROR_I2C_FAIL;
+        }
+
+        return LEP_OK;
+    }
+
+    if (bytesToWrite >= 0)
+    {
+        hal_status = HAL_I2C_Master_Transmit(&hi2c1, deviceAddress << 1, writeDataPtr, bytesToWrite, COMM_TIMEOUT_MS);
+
+        switch (hal_status)
+        {
+            case HAL_OK:
+                break;
+            case HAL_ERROR:
+                // This could be NACK but we don't know. Unfortunately, the HAL doesn't tell us the details :-/
+                return LEP_ERROR_I2C_NACK_RECEIVED;
+            case HAL_BUSY:
+                return LEP_ERROR_I2C_BUS_NOT_READY;
+            case HAL_TIMEOUT:
+                return LEP_TIMEOUT_ERROR;
+            default:
+                return LEP_ERROR_I2C_FAIL;
+        }
+    }
+
+    //FIXME I think that we cannot really read 0 bytes. Or maybe we can? We cannot NACK before the first byte but we could send STOP.
+    if (bytesToRead >= 0)
+    {
+        hal_status = HAL_I2C_Master_Receive(&hi2c1, deviceAddress << 1, readDataPtr, bytesToRead, COMM_TIMEOUT_MS);
+
+        switch (hal_status)
+        {
+            case HAL_OK:
+                break;
+            case HAL_ERROR:
+                // This could be NACK but we don't know. Unfortunately, the HAL doesn't tell us the details :-/
+                return LEP_ERROR_I2C_NACK_RECEIVED;
+            case HAL_BUSY:
+                return LEP_ERROR_I2C_BUS_NOT_READY;
+            case HAL_TIMEOUT:
+                return LEP_TIMEOUT_ERROR;
+            default:
+                return LEP_ERROR_I2C_FAIL;
+        }
+    }
+
+    return LEP_OK;
+}
+
 /******************************************************************************/
 /** PRIVATE MODULE FUNCTIONS                                                 **/
 /******************************************************************************/

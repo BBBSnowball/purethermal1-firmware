@@ -19,10 +19,16 @@ extern union custom_uvc {
       LEP_UINT16 length;
 	  uint8_t data[512];
 	} direct;
+	struct {
+      LEP_UINT16 address;
+      LEP_INT16 lengthWrite;
+      LEP_INT16 lengthRead;
+	  uint8_t data[510];
+	} i2c;
 } custom_uvc;
 
 struct custom_response {
-	LEP_RESULT result;
+	LEP_RESULT result; // note 32 bit
 	uint8_t data[512];
 };
 

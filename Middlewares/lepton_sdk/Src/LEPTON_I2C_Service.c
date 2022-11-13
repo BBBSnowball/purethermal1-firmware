@@ -273,4 +273,28 @@ LEP_RESULT LEP_I2C_MasterStatus(LEP_UINT16 portID,
     return(result);
 }
 
+LEP_RESULT LEP_I2C_MasterGenricRead(LEP_UINT16 portID,
+                                    LEP_UINT8  deviceAddress, 
+                                    LEP_UINT8  *dataPtr,
+                                    LEP_UINT16 dataLength)
+{
+    return DEV_I2C_MasterGenericRead(portID, deviceAddress, dataPtr, dataLength);
+}
 
+LEP_RESULT LEP_I2C_MasterGenricWrite(LEP_UINT16 portID,
+                                    LEP_UINT8  deviceAddress, 
+                                    LEP_UINT8  *dataPtr,
+                                    LEP_UINT16 dataLength)
+{
+    return DEV_I2C_MasterGenericWrite(portID, deviceAddress, dataPtr, dataLength);
+}
+
+LEP_RESULT LEP_I2C_MasterGenricWriteRead(LEP_UINT16 portID,
+                                         LEP_UINT8  deviceAddress, 
+                                         LEP_UINT8  *dataPtrWrite,
+                                         LEP_UINT16 dataLengthWrite,
+                                         LEP_UINT8  *dataPtrRead,
+                                         LEP_UINT16 dataLengthRead)
+{
+    return DEV_I2C_MasterGenericWriteRead(portID, deviceAddress, dataPtrWrite, dataLengthWrite, dataPtrRead, dataLengthRead);
+}
