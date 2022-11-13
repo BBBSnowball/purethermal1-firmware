@@ -14,6 +14,7 @@ SIZE    = $(SYSTEM)size
 OCD ?= openocd
 
 CPU = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
+#CPU = -mthumb -mcpu=cortex-m4 -mfloat-abi=soft -mfpu=fpv4-sp-d16
 
 DEVICE_FAMILY = STM32F4xx
 STARTUP_FILE = stm32f411xe
@@ -76,7 +77,7 @@ OBJDUMPFLAGS = -S
 STARTUP_OBJ = $(CMSIS_DEVSUP)/Source/Templates/gcc/startup_$(STARTUP_FILE).o
 SYSTEM_OBJ = $(CMSIS_DEVSUP)/Source/Templates/system_$(SYSTEM_FILE).o
 
-.PHONY: print_vars
+.PHONY: print_vars all reset flash debug flash-dfu libs libclean clean
 
 BIN = main.bin
 
@@ -116,6 +117,9 @@ $(BIN): main.out
 	$(OBJDUMP) $(OBJDUMPFLAGS) main.out > main.list
 	$(SIZE) main.out
 	@echo Make finished
+
+flash-dfu: $(BIN)
+	./scripts/enter-dfu.py dfu-util -a 0 -D $(BIN) -s 0x08000000:leave
 
 Inc/version.h: .git/HEAD .git/index
 	echo "#ifndef VERSION_H" > $@
