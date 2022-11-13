@@ -126,16 +126,6 @@ extern "C"
     extern LEP_RESULT LEP_I2C_MasterStatus(LEP_UINT16 portID,
                                            LEP_UINT16 *portStatus );
 
-    extern LEP_RESULT LEP_I2C_MasterGenricRead(LEP_UINT16 portID,
-                                             LEP_UINT8  deviceAddress, 
-                                             LEP_UINT8  *dataPtr,
-                                             LEP_UINT16 dataLength);
-
-    extern LEP_RESULT LEP_I2C_MasterGenricWrite(LEP_UINT16 portID,
-                                              LEP_UINT8  deviceAddress, 
-                                              LEP_UINT8  *dataPtr,
-                                              LEP_UINT16 dataLength);
-
     extern LEP_RESULT LEP_I2C_MasterGenricWriteRead(LEP_UINT16 portID,
                                               LEP_UINT8  deviceAddress, 
                                               LEP_UINT8  *dataPtrWrite,

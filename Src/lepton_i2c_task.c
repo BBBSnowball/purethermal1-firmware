@@ -578,7 +578,6 @@ PT_THREAD( lepton_attribute_xfer_task(struct pt *pt))
         memset(response->data, 0, sizeof(response->data));
         if (req.control_id == CUST_CONTROL_GET
             || req.control_id == CUST_CONTROL_DIRECT_READ
-            || req.control_id == CUST_CONTROL_I2C_READ
             || req.control_id == CUST_CONTROL_I2C_WRITEREAD) {
           cust_response_length = sizeof(struct custom_response);
         } else {
@@ -652,35 +651,6 @@ PT_THREAD( lepton_attribute_xfer_task(struct pt *pt))
 		            }
 			        cust_response_length = sizeof(LEP_RESULT);
 		        }
-            if (req.control_id == CUST_CONTROL_I2C_WRITE)
-            {
-			        cust_response_length = sizeof(LEP_RESULT);
-
-              if (custom_uvc.direct.length <= sizeof(custom_uvc.direct.data) && (custom_uvc.direct.address != 0x2a || true))
-              {
-                result = LEP_I2C_MasterGenricRead(hport_desc.portID, custom_uvc.direct.address, custom_uvc.direct.data, custom_uvc.direct.length);
-                PT_YIELD(pt);
-              }
-              else
-              {
-                result = LEP_ERROR;
-              }
-            }
-            if (req.control_id == CUST_CONTROL_I2C_READ)
-            {
-              memset(response->data, 0, sizeof(response->data));
-			        cust_response_length = sizeof(struct custom_response);
-
-              if (custom_uvc.direct.length <= sizeof(custom_uvc.direct.data) && (custom_uvc.direct.address != 0x2a || true))
-              {
-                result = LEP_I2C_MasterGenricWrite(hport_desc.portID, custom_uvc.direct.address, response->data, custom_uvc.direct.length);
-                PT_YIELD(pt);
-              }
-              else
-              {
-                result = LEP_ERROR;
-              }
-            }
             if (req.control_id == CUST_CONTROL_I2C_WRITEREAD)
             {
               memset(response->data, 0, sizeof(response->data));

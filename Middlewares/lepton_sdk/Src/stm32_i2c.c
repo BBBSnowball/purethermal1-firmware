@@ -296,62 +296,6 @@ LEP_RESULT DEV_I2C_MasterStatus(void )
 }
 
 
-LEP_RESULT DEV_I2C_MasterGenericRead(LEP_UINT16  portID,            // User-defined port ID
-                                  LEP_UINT8   deviceAddress,        // I2C Device Address
-                                  LEP_UINT8  *readDataPtr,          // Read DATA buffer pointer
-                                  LEP_UINT16  bytesToRead)          // Number of bytes to Read
-{
-    /* Place Device-Specific Interface here
-    */ 
-
-    HAL_StatusTypeDef hal_status;
-
-    hal_status = HAL_I2C_Master_Receive(&hi2c1, deviceAddress << 1, readDataPtr, bytesToRead, COMM_TIMEOUT_MS);
-
-    switch (hal_status)
-    {
-        case HAL_OK:
-            return LEP_OK;
-        case HAL_ERROR:
-            // This could be NACK but we don't know. Unfortunately, the HAL doesn't tell us the details :-/
-            return LEP_ERROR_I2C_NACK_RECEIVED;
-        case HAL_BUSY:
-            return LEP_ERROR_I2C_BUS_NOT_READY;
-        case HAL_TIMEOUT:
-            return LEP_TIMEOUT_ERROR;
-        default:
-            return LEP_ERROR_I2C_FAIL;
-    }
-}
-
-LEP_RESULT DEV_I2C_MasterGenericWrite(LEP_UINT16  portID,           // User-defined port ID
-                                   LEP_UINT8   deviceAddress,       // Lepton Camera I2C Device Address
-                                   LEP_UINT8  *writeDataPtr,        // Write DATA buffer pointer
-                                   LEP_UINT16  bytesToWrite)        // Number of bytes to Write
-{
-    /* Place Device-Specific Interface here
-    */ 
-
-    HAL_StatusTypeDef hal_status;
-
-    hal_status = HAL_I2C_Master_Transmit(&hi2c1, deviceAddress << 1, writeDataPtr, bytesToWrite, COMM_TIMEOUT_MS);
-
-    switch (hal_status)
-    {
-        case HAL_OK:
-            return LEP_OK;
-        case HAL_ERROR:
-            // This could be NACK but we don't know. Unfortunately, the HAL doesn't tell us the details :-/
-            return LEP_ERROR_I2C_NACK_RECEIVED;
-        case HAL_BUSY:
-            return LEP_ERROR_I2C_BUS_NOT_READY;
-        case HAL_TIMEOUT:
-            return LEP_TIMEOUT_ERROR;
-        default:
-            return LEP_ERROR_I2C_FAIL;
-    }
-}
-
 LEP_RESULT DEV_I2C_MasterGenericWriteRead(LEP_UINT16  portID,               // User-defined port ID
                                           LEP_UINT8   deviceAddress,        // Lepton Camera I2C Device Address
                                           LEP_UINT8  *writeDataPtr,         // Write DATA buffer pointer

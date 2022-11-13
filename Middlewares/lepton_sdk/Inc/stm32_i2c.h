@@ -94,19 +94,6 @@ extern "C"
 
     extern LEP_RESULT DEV_I2C_MasterStatus(void );
 
-    extern LEP_RESULT DEV_I2C_MasterGenericRead(LEP_UINT16  portID,               // User-defined port ID
-                                                LEP_UINT8   deviceAddress,        // I2C Device Address
-                                                LEP_UINT8  *readDataPtr,          // Read DATA buffer pointer
-                                                LEP_UINT16  bytesToRead           // Number of bytes to Read
-                                               );
-
-
-    extern LEP_RESULT DEV_I2C_MasterGenericWrite(LEP_UINT16  portID,              // User-defined port ID
-                                                 LEP_UINT8   deviceAddress,       // Lepton Camera I2C Device Address
-                                                 LEP_UINT8  *writeDataPtr,        // Write DATA buffer pointer
-                                                 LEP_UINT16  bytesToWrite         // Number of bytes to Write
-                                                );
-
     extern LEP_RESULT DEV_I2C_MasterGenericWriteRead(LEP_UINT16  portID,           // User-defined port ID
                                                  LEP_UINT8   deviceAddress,        // Lepton Camera I2C Device Address
                                                  LEP_UINT8  *writeDataPtr,         // Write DATA buffer pointer
