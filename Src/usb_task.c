@@ -200,7 +200,11 @@ PT_THREAD( usb_task(struct pt *pt))
 
 		last_frame_count++;
 
-		if (uvc_xmit_seg > 0)
+		if (videoCommitControl.bFormatIndex == VS_FMT_INDEX(Y16))
+		{
+			// never show splash for raw image data
+		}
+		else if (uvc_xmit_seg > 0)
 		{
 			// don't show any splash here - only do that in the first segment
 		}
