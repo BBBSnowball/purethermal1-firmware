@@ -38,6 +38,8 @@
 #include "usbd_conf.h"
 #include "uuid.h"
 
+#include "project_config.h"
+
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
   */
@@ -237,6 +239,15 @@ uint8_t *  USBD_FS_LangIDStrDescriptor( USBD_SpeedTypeDef speed , uint16_t *leng
   return USBD_LangIDDesc;
 }
 
+#ifdef DEBUG_IN_USB_PRODUCT_STRING
+  extern volatile uint32_t debug_value;
+  #define DEBUG1 ", dbg %08x"
+  #define DEBUG2 ,debug_value
+#else
+  #define DEBUG1
+  #define DEBUG2
+#endif
+
 /**
 * @brief  USBD_FS_ProductStrDescriptor 
 *         return the product string descriptor
@@ -247,8 +258,8 @@ uint8_t *  USBD_FS_LangIDStrDescriptor( USBD_SpeedTypeDef speed , uint16_t *leng
 uint8_t *  USBD_FS_ProductStrDescriptor( USBD_SpeedTypeDef speed , uint16_t *length)
 {
   char product_str[64];
-  snprintf(product_str, sizeof(product_str), "%s (fw:%s)",
-           USBD_PRODUCT_STRING_FS, USBD_SERIALNUMBER_STRING_FS);
+  snprintf(product_str, sizeof(product_str), "%s (fw:%s)" DEBUG1,
+           USBD_PRODUCT_STRING_FS, USBD_SERIALNUMBER_STRING_FS DEBUG2);
   USBD_GetString ((uint8_t*)product_str, USBD_StrDesc, length);
   return USBD_StrDesc;
 }

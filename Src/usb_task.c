@@ -157,6 +157,8 @@ static void draw_splash(int min, int max)
 
 }
 
+volatile uint32_t debug_value = 42;
+
 PT_THREAD( usb_task(struct pt *pt))
 {
 	static int temperature;
@@ -232,8 +234,12 @@ PT_THREAD( usb_task(struct pt *pt))
 			}
 
 #elif defined(SPLASHSCREEN_OVERLAY)
+#	ifdef DEBUG_IN_SPLASHSCREEN_OVERLAY
+			uint32_t tmp = debug_value;
+#	else
 			int tmp = last_frame_count;
-			for (int i=0;i<8;i++) {
+#	endif
+			for (int i=0;i<10;i++) {
 				UG_PutChar('0' + (tmp%10),FRAME_LINE_LENGTH-8-8*i,0,255,0);
 				tmp /= 10;
 			}

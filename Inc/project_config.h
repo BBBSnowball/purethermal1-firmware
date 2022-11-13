@@ -6,6 +6,8 @@
 // #define TMP007_OVERLAY
 // #define SPLASHSCREEN_OVERLAY
 // #define Y16
+// #define DEBUG_IN_USB_PRODUCT_STRING
+// #define DEBUG_IN_SPLASHSCREEN_OVERLAY
 
 // Values from LEP_PCOLOR_LUT_E in Middlewares/lepton_sdk/Inc/LEPTON_VID.h
 #define PSUEDOCOLOR_LUT LEP_VID_FUSION_LUT
