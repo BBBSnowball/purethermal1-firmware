@@ -48,6 +48,8 @@ DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 #include "tasks.h"
 #include "project_config.h"
 
+#include "dfu.h"
+
 typedef enum {
 	PT_BOARD_PT1,
 	PT_BOARD_PT2
@@ -123,6 +125,7 @@ extern void initialise_monitor_handles(void);
 
 int main(void)
 {
+  dfu_init();
 
   /* USER CODE BEGIN 1 */
 

@@ -64,6 +64,9 @@ defined in linker script */
 .word  _ebss
 /* stack used for SystemInit_ExtMemCtl; always internal RAM used */
 
+.extern enter_dfu_magic_value
+.extern enter_dfu_flag
+
 /**
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
@@ -77,6 +80,45 @@ defined in linker script */
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
+  /* Check whether we should enter the DFU bootloader */
+  /* r2 = enter_dfu_flag */
+  ldr   r1, =enter_dfu_flag
+  ldr   r2, [r1]
+  /* enter_dfu_flag = 0 */
+  mov   r3, #0
+  str   r3, [r1]
+  /* if (enter_dfu_flag != enter_dfu_magic_value) goto NormalStartup */
+  ldr   r0, =enter_dfu_magic_value
+  ldr   r0, [r0]
+  cmp   r0, r2
+  bne   NormalStartup
+
+#define PERIPH_BASE           0x40000000U /*!< Peripheral base address in the alias region                                */
+#define AHB1PERIPH_BASE       (PERIPH_BASE + 0x00020000U)
+#define RCC_BASE              (AHB1PERIPH_BASE + 0x3800U)
+#define RCC_CSR_OFFSET        0x74
+#define RCC_CSR_SFTRSTF       0x10000000U
+
+  /* if ((RCC->CSR & RCC_CSR_SFTRSTF) == 0) goto NormalStartup */
+  ldr   r1, =RCC_CSR
+  ldr   r1, [r1]
+  tst   r1, #RCC_CSR_SFTRSTF
+  //beq   NormalStartup  /* branch if equal, i.e. Z is set, i.e. SFTRSTF is not set, i.e. it was not a software reset */
+  //FIXME make this work!
+
+JumpToDFU:
+  ldr   r0, =DFU_Vectors
+  ldr   r0, [r0]
+  ldr   sp, [r0, #0]
+  ldr   r0, [r0, #4]
+  bx    r0
+
+RCC_CSR:
+  .word (RCC_BASE+RCC_CSR_OFFSET)
+DFU_Vectors:
+  .word 0x1FFF0000
+
+NormalStartup:
   ldr   sp, =_estack    		 /* set stack pointer */
 
 /* Copy the data segment initializers from flash to SRAM */  
