@@ -66,6 +66,7 @@ defined in linker script */
 
 .extern enter_dfu_magic_value
 .extern enter_dfu_flag
+.extern debug_value
 
 /**
  * @brief  This is the code that gets called when the processor first
@@ -80,6 +81,25 @@ defined in linker script */
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
+
+
+  ldr   r1, =RCC_CSR
+  ldr   r1, [r1]
+  ldr   r1, [r1]
+  tst   r1, #0x10000000
+  beq   no_software_reset
+  mov   r5, #0x5037
+  b     dbgdone
+  no_software_reset:
+  tst   r1, #0x04000000U
+  beq   no_pin_reset
+  mov   r5, #0x9AD
+  b     dbgdone
+  no_pin_reset:
+  //mov   r5, #0x789
+  mov   r5, r1
+dbgdone:
+
   /* Check whether we should enter the DFU bootloader */
   /* r2 = enter_dfu_flag */
   ldr   r1, =enter_dfu_flag
@@ -154,6 +174,10 @@ LoopFillZerobss:
   ldr  r3, = _ebss
   cmp  r2, r3
   bcc  FillZerobss
+
+  ldr r2, =debug_value
+  //mov r5, #1234
+  str r5, [r2]
 
 /* Call the clock system intitialization function.*/
   bl  SystemInit   
