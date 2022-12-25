@@ -55,7 +55,8 @@ LIBS += -lm
   
 # INCLUDES = -I$(SRCDIR) $(LIBINC)
 INCLUDES = $(LIBINC)
-CFLAGS  = $(CPU) $(CMSIS_OPT) $(OTHER_OPT) -Wall -fno-common -fno-short-enums -Os $(INCLUDES) -Wfatal-errors -std=c99 -DGIT_VERSION
+OPTIONS ?=
+CFLAGS  = $(CPU) $(CMSIS_OPT) $(OTHER_OPT) -Wall -fno-common -fno-short-enums -Os $(INCLUDES) -Wfatal-errors -std=c99 -DGIT_VERSION $(patsubst %,-D%=1,$(OPTIONS))
 ifdef GDB_SEMIHOSTING
 	CFLAGS += -DGDB_SEMIHOSTING
 endif
