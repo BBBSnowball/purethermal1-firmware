@@ -288,7 +288,7 @@ LEP_RESULT LEP_OpenPort(LEP_UINT16 portID,
                         LEP_UINT16   portBaudRate,
                         LEP_CAMERA_PORT_DESC_T_PTR portDescPtr)
 {
-    LEP_RESULT result;
+    LEP_RESULT result = LEP_ERROR_CREATING_COMM;
     LEP_UINT8 deviceAddress;
 
     /* Attempt to acquire memory
@@ -363,7 +363,7 @@ LEP_RESULT LEP_ClosePort(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr)
     }
     else if( portDescPtr->portType == LEP_CCI_SPI )
     {
-
+        result = LEP_COMM_INVALID_PORT_ERROR;  //FIXME What is the right behaviour here? This used to be uninitialized.
     }
     else
         result = LEP_COMM_INVALID_PORT_ERROR;
@@ -407,7 +407,7 @@ LEP_RESULT LEP_ResetPort(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr)
 LEP_RESULT LEP_GetPortStatus(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr, 
                              LEP_UINT16 *status)
 {
-    LEP_RESULT result;
+    LEP_RESULT result = LEP_OK;
 
 
     return(result);
@@ -488,7 +488,7 @@ LEP_RESULT LEP_DirectWriteBuffer(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr,
                                  LEP_ATTRIBUTE_T_PTR attributePtr,
                                  LEP_UINT16 attributeWordLength)
 {
-   LEP_RESULT result;
+   LEP_RESULT result = LEP_COMM_INVALID_PORT_ERROR;
    /* Validate the port descriptor
    */ 
    if( portDescPtr == NULL )

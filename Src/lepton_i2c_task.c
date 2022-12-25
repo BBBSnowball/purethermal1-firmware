@@ -644,7 +644,7 @@ PT_THREAD( lepton_attribute_xfer_task(struct pt *pt))
 						result = LEP_I2C_MasterWriteData( hport_desc.portID,
 													     hport_desc.deviceAddress,
 														 custom_uvc.direct.address,
-														 custom_uvc.direct.data,
+														 (LEP_UINT16*)custom_uvc.direct.data,
 														 custom_uvc.direct.length >> 1);
 
 		                PT_YIELD(pt);

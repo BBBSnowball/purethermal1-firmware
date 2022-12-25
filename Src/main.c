@@ -206,17 +206,17 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-	  PT_SCHEDULE(lepton_task(&lepton_task_pt));
+	  (void)PT_SCHEDULE(lepton_task(&lepton_task_pt));
 #ifndef THERMAL_DATA_UART
-	  PT_SCHEDULE(usb_task(&usb_task_pt));
+	  (void)PT_SCHEDULE(usb_task(&usb_task_pt));
 #else
-	  PT_SCHEDULE(uart_task(&uart_task_pt));
+	  (void)PT_SCHEDULE(uart_task(&uart_task_pt));
 #endif
 	  if (pt_board == PT_BOARD_PT1) {
-	  PT_SCHEDULE(button_task(&button_task_pt));
+	  (void)PT_SCHEDULE(button_task(&button_task_pt));
 	  }
 
-	  PT_SCHEDULE(lepton_attribute_xfer_task(&lepton_attribute_xfer_task_pt));
+	  (void)PT_SCHEDULE(lepton_attribute_xfer_task(&lepton_attribute_xfer_task_pt));
   }
   /* USER CODE END 3 */
 

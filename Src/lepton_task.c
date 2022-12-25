@@ -254,6 +254,8 @@ PT_THREAD( lepton_task(struct pt *pt))
 				last_end_line,
 				current_frame_count, current_buffer
 			);
+#else
+			(void)last_logged_count;
 #endif
 
 

@@ -63,6 +63,9 @@ ifdef USART_DEBUG
 	USART_DEBUG_SPEED ?= 115200
 	CFLAGS += -DUSART_DEBUG -DUSART_DEBUG_SPEED=$(USART_DEBUG_SPEED)
 endif
+ifdef STRICT
+	CFLAGS += -Werror -Wno-attributes -Wno-unused-variable -Wno-unused-function
+endif
 ASFLAGS = $(CFLAGS) -x assembler-with-cpp
 LDFLAGS = -Wl,--gc-sections,-Map=$*.map,-cref -fno-short-enums -Wl,--no-enum-size-warning -T $(LDSCRIPT) $(CPU)
 ifdef GDB_SEMIHOSTING

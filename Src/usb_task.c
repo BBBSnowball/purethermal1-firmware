@@ -173,6 +173,8 @@ PT_THREAD( usb_task(struct pt *pt))
 	static uint8_t packet[VIDEO_PACKET_SIZE_MAX];
 	static int image_num_segments;
 
+	(void)uvc_xmit_plane;  // avoid warning
+
 	PT_BEGIN(pt);
 
 #if (defined(TMP007) && defined(TMP007_OVERLAY)) || defined(SPLASHSCREEN_OVERLAY)
