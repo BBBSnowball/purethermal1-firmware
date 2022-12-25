@@ -20,8 +20,8 @@ def send_vendor_read_request(dev, bRequest, expect_reset=False):
     try:
         return dev.ctrl_transfer(0xc0, bRequest, 0, 0, 32)
     except usb.core.USBError as e:
-        # We expect "[Errno 32] Pipe error".
-        if not expect_reset or e.errno != 32:
+        # We expect "[Errno 32] Pipe error" or "[Errno 5] Input/Output Error".
+        if not expect_reset or (e.errno != 32 and e.errno != 5):
             raise
 
 def enter_dfu():
