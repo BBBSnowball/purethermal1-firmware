@@ -656,7 +656,7 @@ PT_THREAD( lepton_attribute_xfer_task(struct pt *pt))
               memset(response->data, 0, sizeof(response->data));
 			        cust_response_length = sizeof(struct custom_response);
 
-              if (custom_uvc.i2c.lengthWrite <= sizeof(custom_uvc.i2c.data) && custom_uvc.i2c.lengthRead <= sizeof(response->data) && (custom_uvc.i2c.address != 0x2a || true))
+              if (custom_uvc.i2c.lengthWrite <= (int)sizeof(custom_uvc.i2c.data) && custom_uvc.i2c.lengthRead <= (int)sizeof(response->data) && (custom_uvc.i2c.address != 0x2a || true))
               {
                 result = LEP_I2C_MasterGenricWriteRead(hport_desc.portID, custom_uvc.i2c.address, custom_uvc.i2c.data, custom_uvc.i2c.lengthWrite, response->data, custom_uvc.i2c.lengthRead);
                 PT_YIELD(pt);
