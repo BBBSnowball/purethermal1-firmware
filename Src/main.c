@@ -41,6 +41,7 @@
 #include "lepton.h"
 #include "lepton_i2c.h"
 #include "tmp007_i2c.h"
+#include "mlx90614_i2c.h"
 #include "usbd_uvc.h"
 #include "usbd_uvc_if.h"
 DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
@@ -183,6 +184,12 @@ int main(void)
   DEBUG_PRINTF("reading_tmp007_regs...\n\r");
 
   read_tmp007_regs();
+#endif
+
+#if defined(MLX90614)
+  DEBUG_PRINTF("reading_mlx90614_regs...\n\r");
+
+  read_mlx90614_regs(1);
 #endif
 
   DEBUG_PRINTF("Initialized...\n\r");

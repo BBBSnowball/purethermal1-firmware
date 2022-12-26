@@ -8,6 +8,7 @@
 #include "lepton.h"
 #include "lepton_i2c.h"
 #include "tmp007_i2c.h"
+#include "mlx90614_i2c.h"
 #include "usbd_uvc.h"
 #include "usbd_uvc_if.h"
 #include "circ_buf.h"
@@ -269,6 +270,9 @@ PT_THREAD( lepton_task(struct pt *pt))
 
 #if defined(TMP007)
 			read_tmp007_regs();
+#endif
+#if defined(MLX90614)
+			read_mlx90614_regs(0);
 #endif
 
 			last_tick = curtick;

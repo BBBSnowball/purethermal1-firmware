@@ -19,11 +19,16 @@ extern I2C_HandleTypeDef hi2c1;
 
 int tmp007_init = 0;
 int16_t last_t_obj;
-long last_mili_celisius;
+long last_milli_celsius;
 
-long get_last_mili_celisius(void)
+bool has_last_milli_celsius(void)
 {
-	return last_mili_celisius; 
+	return true;
+}
+
+long get_last_milli_celsius(void)
+{
+	return last_milli_celsius; 
 }
 
 HAL_StatusTypeDef tmp007_write_word(unsigned int reg,unsigned int word_data)
@@ -63,10 +68,10 @@ uint16_t tmp007_read_reg(unsigned int reg)
 	return reading;
 }
 
-long get_mili_celisius(void)
+long get_milli_celsius(void)
 {
 	int16_t  Tobj;
-	long mili_celisius;
+	long milli_celsius;
 
 	Tobj = (int16_t) (tmp007_read_reg(TMP007_TOBJ));
 
@@ -76,12 +81,12 @@ long get_mili_celisius(void)
 	}
 
 	Tobj >>= 2;
-	mili_celisius = ((long)Tobj * 3125)/100;
+	milli_celsius = ((long)Tobj * 3125)/100;
 
 	last_t_obj = Tobj;
-	last_mili_celisius = mili_celisius;
+	last_milli_celsius = milli_celsius;
 
-	return mili_celisius;
+	return milli_celsius;
 }
 
 int convert_C_to_F(int C)
@@ -105,7 +110,7 @@ int read_tmp007_regs(void)
 		tmp007_init = 1;
 	}
 
-	temperature = get_mili_celisius();
+	temperature = get_milli_celsius();
 	DEBUG_PRINTF("TMP007_TOBJ: %x  mC: %ld  C: %ld  F: %d\n\r",tmp007_read_reg(TMP007_TOBJ)>>2,temperature,temperature/1000, convert_C_to_F(temperature/1000));
 	(void) temperature; //remove warning
 

@@ -8,6 +8,7 @@
 #include "lepton.h"
 #include "lepton_i2c.h"
 #include "tmp007_i2c.h"
+#include "mlx90614_i2c.h"
 #include "usbd_uvc.h"
 #include "usbd_uvc_if.h"
 
@@ -21,7 +22,7 @@ extern volatile uint8_t g_uvc_stream_status;
 extern volatile uint8_t g_telemetry_num_lines;
 extern struct uvc_streaming_control videoCommitControl;
 
-#ifdef SPLASHSCREEN_OVERLAY_DEFAULT_ON
+#ifdef OVERLAY_DEFAULT_ON
 static int overlay_mode = 1;
 #else
 static int overlay_mode = 0;
@@ -47,7 +48,7 @@ void HAL_RCC_CSSCallback(void) {
 
 #include "ugui.h"
 
-#if (defined(TMP007) && defined(TMP007_OVERLAY)) || defined(SPLASHSCREEN_OVERLAY)
+#if (defined(TMP007) && defined(TMP007_OVERLAY)) || (defined(MLX90614) && defined(MLX90614_OVERLAY)) || defined(SPLASHSCREEN_OVERLAY)
 UG_GUI gui; 
 static void pixel_set(UG_S16 x , UG_S16 y ,UG_COLOR c )
 {
@@ -165,7 +166,7 @@ volatile uint32_t debug_value = 42;
 
 PT_THREAD( usb_task(struct pt *pt))
 {
-	static int temperature;
+	static int temperature, temperature_milli;
 	static uint16_t count = 0, i;
 
 	static uint8_t uvc_header[2] = { 2, 0 };
@@ -177,7 +178,7 @@ PT_THREAD( usb_task(struct pt *pt))
 
 	PT_BEGIN(pt);
 
-#if (defined(TMP007) && defined(TMP007_OVERLAY)) || defined(SPLASHSCREEN_OVERLAY)
+#if (defined(TMP007) && defined(TMP007_OVERLAY)) || (defined(MLX90614) && defined(MLX90614_OVERLAY)) || defined(SPLASHSCREEN_OVERLAY)
 	UG_Init(&gui,pixel_set,80,60);
 	UG_FontSelect(&FONT_8X8);     
 #endif
@@ -202,6 +203,10 @@ PT_THREAD( usb_task(struct pt *pt))
 
 		last_frame_count++;
 
+#if (defined(MLX90614) && defined(MLX90614_OVERLAY))
+		want_mlx90614_value = (overlay_mode == 1) && (videoCommitControl.bFormatIndex != VS_FMT_INDEX(Y16));
+#endif
+
 		if (videoCommitControl.bFormatIndex == VS_FMT_INDEX(Y16))
 		{
 			// never show splash for raw image data
@@ -210,37 +215,53 @@ PT_THREAD( usb_task(struct pt *pt))
 		{
 			// don't show any splash here - only do that in the first segment
 		}
+#ifdef SPLASHSCREEN_OVERLAY
 		else if (((last_frame_count % 1800) > 0)   && ((last_frame_count % 1800) < 150)  )
 		{
-#ifdef SPLASHSCREEN_OVERLAY 
 			if(overlay_mode == 1)
 			{
 				draw_splash(255, 0);
 			}
-#endif
 		}
+#endif
 		else
 		{
 
-#if defined(TMP007) && defined(TMP007_OVERLAY)
-			if(overlay_mode == 1)
+#if (defined(TMP007) && defined(TMP007_OVERLAY)) || (defined(MLX90614) && defined(MLX90614_OVERLAY))
+			const int temperature_y_offset = 0;
+			if(overlay_mode == 1 && has_last_milli_celsius())
 			{
-				temperature = get_last_mili_celisius()/1000;
+				temperature_milli = get_last_milli_celsius();
+				#ifdef OVERLAY_FAHRENHEIT
+					// "+5" is so we round instead of truncate
+					temperature_milli = (temperature_milli * 18 + 5) / 10 + 32000;
+				#endif
+				temperature = temperature_milli/1000;
 
 				if(temperature < 0)
 				{
-					UG_PutChar('-',0,51,10000,0);
+					UG_PutChar('-',0,temperature_y_offset,255,0);
 					temperature = -temperature;
 				}
 				else if(((temperature/100)%10) != 0 ) 
 				{
-					UG_PutChar((temperature/100)%10 + '0',0,51,255,0);
+					UG_PutChar((temperature/100)%10 + '0',0,temperature_y_offset,255,0);
 				}
 
-				UG_PutChar((temperature/10)%10 + '0',8,51,255,0);
-				UG_PutChar(temperature%10 + '0',16,51,255,0);
-				UG_PutChar(248,24,51,255,0);
-				UG_PutChar('C',32,51,255,0);
+				UG_PutChar((temperature/10)%10 + '0',8,temperature_y_offset,255,0);
+				UG_PutChar(temperature%10 + '0',16,temperature_y_offset,255,0);
+				UG_PutChar('.',24,temperature_y_offset,255,0);
+				UG_PutChar(temperature_milli/100%10 + '0',32,temperature_y_offset,255,0);
+				UG_PutChar(248,40,temperature_y_offset,255,0);
+				#ifdef OVERLAY_FAHRENHEIT
+					UG_PutChar('F',48,temperature_y_offset,255,0);
+				#else
+					UG_PutChar('C',48,temperature_y_offset,255,0);
+				#endif
+			}
+			else if(overlay_mode == 1)
+			{
+				UG_PutChar('/',0,temperature_y_offset,255,0);
 			}
 
 #elif defined(SPLASHSCREEN_OVERLAY)
