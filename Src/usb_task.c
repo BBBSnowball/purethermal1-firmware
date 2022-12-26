@@ -264,7 +264,7 @@ PT_THREAD( usb_task(struct pt *pt))
 				UG_PutChar('/',0,temperature_y_offset,255,0);
 			}
 
-#elif defined(SPLASHSCREEN_OVERLAY)
+#elif defined(SPLASHSCREEN_OVERLAY_COUNTER) || defined(DEBUG_IN_SPLASHSCREEN_OVERLAY)
 #	ifdef DEBUG_IN_SPLASHSCREEN_OVERLAY
 			uint32_t tmp = debug_value;
 #	else
